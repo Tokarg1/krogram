@@ -6,7 +6,7 @@ import { callService } from '../../services/callService';
 import './ActiveCall.css';
 
 const ActiveCall = () => {
-  const { isActive, isReceiving, isCalling, remoteUsername, remoteUserId, remoteStream, localStream } = useCallStore();
+  const { isActive, isReceiving, isCalling, remoteUsername, remoteUserId, remoteStream, isMuted, toggleMute } = useCallStore();
   const audioRef = useRef<HTMLAudioElement>(null);
 
   // Play incoming remote audio automatically
@@ -54,9 +54,8 @@ const ActiveCall = () => {
 
             {(isCalling || isActive) && (
                 <>
-                    {/* Basic Mute Toggle visual only prototype */}
-                    <button className="btn-call mute">
-                        <Mic size={20} />
+                    <button className={`btn-call mute ${isMuted ? 'muted' : ''}`} onClick={toggleMute}>
+                        {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
                     </button>
                     <button className="btn-call end" onClick={() => callService.endActiveCall()}>
                         <PhoneOff size={20} />

@@ -6,6 +6,7 @@ class CallService {
   private channel: any = null;
   private peerConnection: RTCPeerConnection | null = null;
   private localStream: MediaStream | null = null;
+  private pendingCandidates: any[] = [];
   
   // Stun servers to help peers find each other through NATs/Firewalls
   private rtcConfig = {
@@ -45,17 +46,25 @@ class CallService {
                 useCallStore.getState().receiveCall(senderId, senderName, data);
                 if (!this.peerConnection) this.createPeerConnection(senderId);
                 await this.peerConnection?.setRemoteDescription(new RTCSessionDescription(data));
+                this.pendingCandidates.forEach(c => this.peerConnection?.addIceCandidate(new RTCIceCandidate(c)));
+                this.pendingCandidates = [];
                 break;
             case 'answer':
                 // The person I called answered
                 await this.peerConnection?.setRemoteDescription(new RTCSessionDescription(data));
                 useCallStore.getState().acceptCall();
+                this.pendingCandidates.forEach(c => this.peerConnection?.addIceCandidate(new RTCIceCandidate(c)));
+                this.pendingCandidates = [];
                 break;
             case 'ice-candidate':
                 // Exchanging network paths
-                if (this.peerConnection && data) {
-                   await this.peerConnection.addIceCandidate(new RTCIceCandidate(data));
-                }
+                try {
+                    if (this.peerConnection && this.peerConnection.remoteDescription) {
+                        await this.peerConnection.addIceCandidate(new RTCIceCandidate(data));
+                    } else if (data) {
+                        this.pendingCandidates.push(data);
+                    }
+                } catch(e) { console.error("[WebRTC] ICE error", e); }
                 break;
             case 'end_call':
                 this.cleanup();
@@ -188,6 +197,7 @@ class CallService {
       }
       this.localStream = null;
       this.peerConnection = null;
+      this.pendingCandidates = [];
   }
 }
 

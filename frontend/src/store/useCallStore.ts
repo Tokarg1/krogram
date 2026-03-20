@@ -9,11 +9,13 @@ interface CallState {
   localStream: MediaStream | null;
   remoteStream: MediaStream | null;
   peerConnection: RTCPeerConnection | null;
+  isMuted: boolean;
   
   startCall: (userId: number, username: string) => void;
   receiveCall: (userId: number, username: string, signalData: any) => void;
   acceptCall: () => void;
   endCall: () => void;
+  toggleMute: () => void;
   setLocalStream: (stream: MediaStream | null) => void;
   setRemoteStream: (stream: MediaStream | null) => void;
   setPeerConnection: (pc: RTCPeerConnection | null) => void;
@@ -28,6 +30,7 @@ export const useCallStore = create<CallState>((set) => ({
   localStream: null,
   remoteStream: null,
   peerConnection: null,
+  isMuted: false,
 
   startCall: (userId, username) => set({
     isCalling: true,
@@ -55,6 +58,16 @@ export const useCallStore = create<CallState>((set) => ({
     localStream: null,
     remoteStream: null,
     peerConnection: null,
+    isMuted: false,
+  }),
+  
+  toggleMute: () => set((state) => {
+    if (state.localStream) {
+        state.localStream.getAudioTracks().forEach(track => {
+            track.enabled = !track.enabled;
+        });
+    }
+    return { isMuted: !state.isMuted };
   }),
   
   setLocalStream: (stream) => set({ localStream: stream }),
