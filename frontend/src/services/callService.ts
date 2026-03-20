@@ -26,7 +26,9 @@ class CallService {
     if (this.channel) supabase.removeChannel(this.channel);
 
     console.log('[WebRTC] Joining global signaling channel');
-    this.channel = supabase.channel(`calls_global`);
+    this.channel = supabase.channel('calls_global', {
+      config: { broadcast: { ack: true } }
+    });
     
     // Listen for broadcast messages
     this.channel.on('broadcast', { event: 'signal' }, async (payload: any) => {
@@ -77,30 +79,44 @@ class CallService {
         type,
         data
       }
+    }).then((resp: any) => {
+      if (resp !== 'ok') console.error('[WebRTC Broadcast Error]', resp);
     });
   }
 
   async initiateCall(targetUserId: number, targetUsername: string) {
-    useCallStore.getState().startCall(targetUserId, targetUsername);
-    await this.setupLocalMedia();
-    this.createPeerConnection(targetUserId);
+    try {
+      useCallStore.getState().startCall(targetUserId, targetUsername);
+      await this.setupLocalMedia();
+      this.createPeerConnection(targetUserId);
 
-    const offer = await this.peerConnection?.createOffer();
-    if (offer) {
-        await this.peerConnection?.setLocalDescription(offer);
-        this.sendSignal(targetUserId, 'offer', offer);
+      const offer = await this.peerConnection?.createOffer();
+      if (offer) {
+          await this.peerConnection?.setLocalDescription(offer);
+          this.sendSignal(targetUserId, 'offer', offer);
+      }
+    } catch (err: any) {
+      alert(`Call failed: ${err.message || 'Microphone access denied'}`);
+      this.cleanup();
+      useCallStore.getState().endCall();
     }
   }
 
   async answerCall(targetUserId: number) {
-    await this.setupLocalMedia();
-    
-    // Remote description was already set when 'offer' signal fired
-    const answer = await this.peerConnection?.createAnswer();
-    if (answer) {
-        await this.peerConnection?.setLocalDescription(answer);
-        this.sendSignal(targetUserId, 'answer', answer);
-        useCallStore.getState().acceptCall(); // switch UI to active call
+    try {
+      await this.setupLocalMedia();
+      
+      // Remote description was already set when 'offer' signal fired
+      const answer = await this.peerConnection?.createAnswer();
+      if (answer) {
+          await this.peerConnection?.setLocalDescription(answer);
+          this.sendSignal(targetUserId, 'answer', answer);
+          useCallStore.getState().acceptCall(); // switch UI to active call
+      }
+    } catch (err: any) {
+      alert(`Failed to answer: ${err.message || 'Microphone access denied'}`);
+      this.cleanup();
+      useCallStore.getState().endCall();
     }
   }
 
