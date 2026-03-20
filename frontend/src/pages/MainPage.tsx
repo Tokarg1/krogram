@@ -4,6 +4,8 @@ import { api } from '../services/api';
 import { socketService } from '../services/socket';
 import Sidebar from '../components/layout/Sidebar';
 import ChatWindow from '../components/chat/ChatWindow';
+import ActiveCall from '../components/chat/ActiveCall';
+import { callService } from '../services/callService';
 
 import './MainPage.css';
 
@@ -26,6 +28,7 @@ const MainPage = () => {
 
     initData();
     socketService.connect();
+    callService.initializeSignaling();
 
     return () => socketService.disconnect();
   }, [setServers, setCurrentServer]);
@@ -36,6 +39,7 @@ const MainPage = () => {
       <div className="content-area">
         <ChatWindow />
       </div>
+      <ActiveCall />
     </div>
   );
 };

@@ -3,7 +3,8 @@ import { useChatStore, Message } from '../../store/useChatStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { api } from '../../services/api';
 import { socketService } from '../../services/socket';
-import { Hash, Volume2, Send, Paperclip, Users, Menu, Trash2, Smile } from 'lucide-react';
+import { callService } from '../../services/callService';
+import { Hash, Volume2, Send, Paperclip, Users, Menu, Trash2, Smile, Phone } from 'lucide-react';
 import VoiceStub from './VoiceStub';
 import MediaInput from './MediaInput';
 import './ChatWindow.css';
@@ -110,13 +111,19 @@ const ChatWindow = () => {
                   <div className="message-content">
                     <div className="message-header">
                       <span className="message-author">{msg.sender.username}</span>
+                      {msg.sender_id !== user?.id && (
+                        <Phone 
+                          size={14} 
+                          onClick={() => callService.initiateCall(msg.sender_id, msg.sender.username)} 
+                          style={{ cursor: 'pointer', marginLeft: '6px', opacity: 0.7 }}
+                        />
+                      )}
                       <span className="message-time">{new Date(msg.created_at).toLocaleTimeString()}</span>
                       {msg.sender_id === user?.id && (
                         <Trash2 
                           size={14} 
                           className="delete-msg-icon" 
                           onClick={() => deleteMsg(msg.id)} 
-                          title="Delete message"
                         />
                       )}
                     </div>

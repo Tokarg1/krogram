@@ -106,7 +106,7 @@ const Sidebar = () => {
             <>
               <div className="dm-section-header">
                 <span>Direct Messages</span>
-                <Plus size={16} className="add-dm-icon" title="New DM" onClick={() => setIsSearchOpen(true)} />
+                <Plus size={16} className="add-dm-icon" onClick={() => setIsSearchOpen(true)} />
               </div>
               <div className="dm-requests-btn" onClick={() => setIsRequestsOpen(true)}>
                 <span>Friend Requests</span>

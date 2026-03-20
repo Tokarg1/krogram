@@ -6,9 +6,9 @@ import { api } from '../services/api';
 import './LoginPage.css';
 
 const LoginPage = () => {
-  const [phone, setPhone] = useState('');
-  const [code, setCode] = useState('');
-  const [step, setStep] = useState<'phone' | 'code'>('phone');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [mode, setMode] = useState<'login' | 'register'>('login');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
@@ -16,36 +16,24 @@ const LoginPage = () => {
   const setToken = useAuthStore((state) => state.setToken);
   const setUser = useAuthStore((state) => state.setUser);
 
-  const handleRequestCode = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    try {
-      await api.post('/auth/request-code', { phone });
-      setStep('code');
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to send code');
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const handleVerifyCode = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
     try {
-      const resp = await api.post('/auth/verify-code', { phone, code });
+      const endpoint = mode === 'login' ? '/auth/login' : '/auth/register';
+      const resp = await api.post(endpoint, { username, password });
+      
       setToken(resp.data.access_token);
       
-      const userResp = await api.get('/users/me', {
-        headers: { Authorization: `Bearer ${resp.data.access_token}` }
-      });
+      // Fetch user profile immediately
+      const userResp = await api.get('/users/me');
       setUser(userResp.data);
       
       navigate('/app');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Invalid code');
+      setError(err.response?.data?.detail || err.message || 'Authentication failed');
     } finally {
       setLoading(false);
     }
@@ -66,56 +54,49 @@ const LoginPage = () => {
         </div>
 
         <AnimatePresence mode="wait">
-          {step === 'phone' ? (
-            <motion.form 
-              key="phone"
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 20, opacity: 0 }}
-              onSubmit={handleRequestCode}
-              className="login-form"
+          <motion.form 
+            key={mode}
+            initial={{ x: mode === 'login' ? -20 : 20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: mode === 'login' ? 20 : -20, opacity: 0 }}
+            onSubmit={handleSubmit}
+            className="login-form"
+          >
+            <label>Username</label>
+            <input 
+              type="text" 
+              placeholder="Enter username" 
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              className="input-glass"
+            />
+
+            <label>Password</label>
+            <input 
+              type="password" 
+              placeholder="••••••••" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="input-glass"
+            />
+            
+            <button disabled={loading} type="submit" className="btn-primary">
+              {loading ? 'Processing...' : (mode === 'login' ? 'Login' : 'Create Account')}
+            </button>
+
+            <button 
+              type="button" 
+              onClick={() => {
+                setMode(mode === 'login' ? 'register' : 'login');
+                setError('');
+              }} 
+              className="btn-link"
             >
-              <label>Phone Number</label>
-              <input 
-                type="tel" 
-                placeholder="+7 (999) 000-00-00" 
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                required
-                className="input-glass"
-              />
-              <button disabled={loading} type="submit" className="btn-primary">
-                {loading ? 'Sending...' : 'Get Code'}
-              </button>
-            </motion.form>
-          ) : (
-            <motion.form 
-              key="code"
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 20, opacity: 0 }}
-              onSubmit={handleVerifyCode}
-              className="login-form"
-            >
-              <label>Enter 6-digit Code</label>
-              <input 
-                type="text" 
-                placeholder="123456" 
-                maxLength={6}
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                required
-                className="input-glass"
-              />
-              <p className="hint">Try '123456' for prototype</p>
-              <button disabled={loading} type="submit" className="btn-primary">
-                {loading ? 'Verifying...' : 'Login'}
-              </button>
-              <button type="button" onClick={() => setStep('phone')} className="btn-link">
-                Change Number
-              </button>
-            </motion.form>
-          )}
+              {mode === 'login' ? "Don't have an account? Register" : "Already have an account? Login"}
+            </button>
+          </motion.form>
         </AnimatePresence>
 
         {error && <p className="error-text">{error}</p>}

@@ -61,24 +61,23 @@ export const api = {
     
     post: async (url: string, body?: any, config?: any) => {
         try {
-            if (url === '/auth/request-code') {
-                const { phone } = body;
-                const code = '123456';
-                const { data: existing } = await supabase.from('users').select('id').eq('phone', phone).single();
-                if (!existing) {
-                    await supabase.from('users').insert([{ phone, username: `User_${phone.slice(-4)}`, last_verify_code: code }]);
-                } else {
-                    await supabase.from('users').update({ last_verify_code: code }).eq('phone', phone);
+            if (url === '/auth/register') {
+                const { username, password } = body;
+                if (!username || !password) throw new Error("Username and password are required");
+                const { data: existing } = await supabase.from('users').select('id').eq('username', username).maybeSingle();
+                if (existing) {
+                    throw { response: { data: { detail: "Username already taken" } } };
                 }
-                return response({ message: 'Code sent' });
+                const { data: newUser, error } = await supabase.from('users').insert([{ username, password }]).select().single();
+                if (error) throw new Error(error.message);
+                return response({ access_token: newUser.id.toString(), token_type: 'bearer' });
             }
-            if (url === '/auth/verify-code') {
-                const { phone, code } = body;
-                const { data: user } = await supabase.from('users').select('*').eq('phone', phone).single();
-                if (!user || user.last_verify_code !== code) {
-                    throw { response: { status: 400, data: { detail: "Incorrect code" } } };
+            if (url === '/auth/login') {
+                const { username, password } = body;
+                const { data: user } = await supabase.from('users').select('*').eq('username', username).eq('password', password).maybeSingle();
+                if (!user) {
+                    throw { response: { data: { detail: "Invalid username or password" } } };
                 }
-                await supabase.from('users').update({ last_verify_code: null }).eq('id', user.id);
                 return response({ access_token: user.id.toString(), token_type: 'bearer' });
             }
             if (url === '/servers/') {
