@@ -20,7 +20,7 @@ export const api = {
             }
             if (url === '/servers/') {
                 const uid = getCurrentUserId();
-                const { data } = await supabase.from('user_server').select('server_id, servers(*)').eq('user_id', uid);
+                const { data } = await supabase.from('user_server').select('server_id, servers(*, channels(*))').eq('user_id', uid);
                 return response((data || []).map((d: any) => d.servers));
             }
             if (url === '/friends/dms') {
@@ -87,7 +87,8 @@ export const api = {
                 const { data: server } = await supabase.from('servers').insert([{ name, icon_url, owner_id: uid }]).select().single();
                 if (server) {
                     await supabase.from('user_server').insert([{ user_id: uid, server_id: server.id }]);
-                    await supabase.from('channels').insert([{ name: 'General', type: 'text', server_id: server.id }]);
+                    const { data: channel } = await supabase.from('channels').insert([{ name: 'General', type: 'text', server_id: server.id }]).select().single();
+                    (server as any).channels = channel ? [channel] : [];
                 }
                 return response(server);
             }

@@ -92,7 +92,7 @@ const Sidebar = () => {
 
         <div className="channels-list scroller">
           {currentServer ? (
-            currentServer.channels.map((channel) => (
+            (currentServer.channels || []).map((channel) => (
               <div 
                 key={channel.id} 
                 className={`channel-item ${currentChannel?.id === channel.id ? 'active' : ''}`}
@@ -111,7 +111,7 @@ const Sidebar = () => {
               <div className="dm-requests-btn" onClick={() => setIsRequestsOpen(true)}>
                 <span>Friend Requests</span>
               </div>
-              {dmChannels.map((channel) => (
+              {(dmChannels || []).map((channel) => (
                 <div 
                   key={channel.id} 
                   className={`channel-item ${currentChannel?.id === channel.id ? 'active' : ''}`}
