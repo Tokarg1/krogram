@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Check, Trash2, User } from 'lucide-react';
+import { Check, Trash2, User, X } from 'lucide-react';
 import { api } from '../../services/api';
+import { useAuthStore } from '../../store/useAuthStore';
+import { supabase } from '../../services/supabase';
 import './Modal.css';
 
 interface FriendRequestsModalProps {
@@ -10,43 +12,83 @@ interface FriendRequestsModalProps {
   onAccepted: (channelId: number) => void;
 }
 
+interface FriendRequest {
+  id: number;
+  from_user_id: number;
+  from_user?: {
+    id: number;
+    username: string;
+    avatar_url?: string | null;
+  };
+}
+
 const FriendRequestsModal: React.FC<FriendRequestsModalProps> = ({ isOpen, onClose, onAccepted }) => {
-  const [requests, setRequests] = useState<any[]>([]);
+  const [requests, setRequests] = useState<FriendRequest[]>([]);
   const [loading, setLoading] = useState(false);
+  const user = useAuthStore((state) => state.user);
 
   const fetchRequests = async () => {
     setLoading(true);
     try {
-      const resp = await api.get('/friends/incoming');
-      setRequests(resp.data);
-    } catch (err) {
-      console.error('Failed to fetch requests:', err);
+      const response = await api.get('/friends/incoming');
+      setRequests(response.data);
+    } catch (error) {
+      console.error('Failed to fetch requests:', error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (isOpen) fetchRequests();
+    if (isOpen) {
+      void fetchRequests();
+    }
   }, [isOpen]);
 
-  const handleAccept = async (reqId: number) => {
+  useEffect(() => {
+    if (!isOpen || !user) {
+      return;
+    }
+
+    const channel = supabase
+      .channel(`friend_requests_modal_${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'friend_requests' },
+        (payload) => {
+          const row = (payload.new || payload.old) as { to_phone?: string; from_user_id?: number; status?: string } | undefined;
+          if (row?.to_phone === user.username || row?.from_user_id === user.id) {
+            void fetchRequests();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [isOpen, user?.id, user?.username]);
+
+  const handleAccept = async (requestId: number) => {
     try {
-      const resp = await api.post(`/friends/accept/${reqId}`);
-      setRequests(prev => prev.filter(r => r.id !== reqId));
-      onAccepted(resp.data.channel_id);
-      alert('Request accepted!');
-    } catch (err) {
+      const response = await api.post(`/friends/accept/${requestId}`);
+      setRequests((value) => value.filter((request) => request.id !== requestId));
+      onAccepted(response.data.channel_id);
+      onClose();
+      alert('Request accepted');
+    } catch (error) {
       alert('Failed to accept request');
+      console.error(error);
     }
   };
 
-  const handleDecline = async (reqId: number) => {
+  const handleDecline = async (requestId: number) => {
     try {
-      await api.post(`/friends/decline/${reqId}`);
-      setRequests(prev => prev.filter(r => r.id !== reqId));
-    } catch (err) {
+      await api.post(`/friends/decline/${requestId}`);
+      setRequests((value) => value.filter((request) => request.id !== requestId));
+    } catch (error) {
       alert('Failed to decline request');
+      console.error(error);
     }
   };
 
@@ -54,32 +96,40 @@ const FriendRequestsModal: React.FC<FriendRequestsModalProps> = ({ isOpen, onClo
     <AnimatePresence>
       {isOpen && (
         <div className="modal-overlay">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             className="modal-content glass-panel"
-            style={{ maxWidth: '400px' }}
+            style={{ maxWidth: '420px' }}
           >
             <div className="modal-header">
               <h2>Incoming Requests</h2>
-              <button onClick={onClose} className="close-btn"><X /></button>
+              <button onClick={onClose} className="close-btn">
+                <X />
+              </button>
             </div>
 
-            <div className="request-list scroller" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+            <div className="request-list scroller" style={{ maxHeight: '420px', overflowY: 'auto' }}>
               {loading ? (
                 <p className="status-text">Loading...</p>
               ) : requests.length > 0 ? (
-                requests.map(req => (
-                  <div key={req.id} className="request-item result-item">
-                    <div className="user-avatar"><User /></div>
+                requests.map((request) => (
+                  <div key={request.id} className="request-item result-item">
+                    <div className="user-avatar">
+                      {request.from_user?.username?.[0]?.toUpperCase() || <User size={18} />}
+                    </div>
                     <div className="user-info">
-                       <span className="username">User ID: {req.sender_id}</span>
-                       <span className="status">Wants to be your friend</span>
+                      <span className="username">{request.from_user?.username || `User ${request.from_user_id}`}</span>
+                      <span className="status">Wants to open a DM with you</span>
                     </div>
                     <div className="request-actions" style={{ display: 'flex', gap: '8px' }}>
-                       <button onClick={() => handleAccept(req.id)} className="btn-icon circle-green"><Check size={18} /></button>
-                       <button onClick={() => handleDecline(req.id)} className="btn-icon circle-red"><Trash2 size={18} /></button>
+                      <button onClick={() => void handleAccept(request.id)} className="btn-icon circle-green">
+                        <Check size={18} />
+                      </button>
+                      <button onClick={() => void handleDecline(request.id)} className="btn-icon circle-red">
+                        <Trash2 size={18} />
+                      </button>
                     </div>
                   </div>
                 ))

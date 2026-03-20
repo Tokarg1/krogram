@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useChatStore } from '../../store/useChatStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { api } from '../../services/api';
+import { supabase } from '../../services/supabase';
 import { 
   Home, Plus, Hash, Volume2, User, 
-  Search, Settings, LogOut, ChevronRight, X,
+  Search, Settings, LogOut, X,
   Globe
 } from 'lucide-react';
 import UserSearchModal from '../modals/UserSearchModal';
@@ -27,17 +28,49 @@ const Sidebar = () => {
   const [isJoinOpen, setIsJoinOpen] = useState(false);
 
   const fetchDMs = async () => {
+    if (!user) {
+      return [];
+    }
+
     try {
       const resp = await api.get('/friends/dms');
       setDmChannels(resp.data);
+      return resp.data;
     } catch (err) {
       console.error('DM load failed:', err);
+      return [];
     }
   };
 
   useEffect(() => {
-    fetchDMs();
-  }, [setDmChannels]);
+    void fetchDMs();
+  }, [setDmChannels, user?.id]);
+
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    const channel = supabase
+      .channel(`sidebar_friend_requests_${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'friend_requests' },
+        (payload) => {
+          const row = payload.new as { from_user_id?: number; to_phone?: string; status?: string };
+          if (row?.status === 'accepted' && (row.from_user_id === user.id || row.to_phone === user.username)) {
+            window.setTimeout(() => {
+              void fetchDMs();
+            }, 500);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [user?.id, user?.username]);
 
   const handleSelect = (callback: () => void) => {
     callback();
@@ -144,7 +177,14 @@ const Sidebar = () => {
       <FriendRequestsModal 
         isOpen={isRequestsOpen} 
         onClose={() => setIsRequestsOpen(false)} 
-        onAccepted={() => fetchDMs()} 
+        onAccepted={async (channelId) => {
+          const channels = await fetchDMs();
+          const channel = channels.find((item: any) => item.id === channelId);
+          setCurrentServer(null);
+          if (channel) {
+            setCurrentChannel(channel);
+          }
+        }} 
       />
       <CreateServerModal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
       <JoinServerModal isOpen={isJoinOpen} onClose={() => setIsJoinOpen(false)} />

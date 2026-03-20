@@ -78,6 +78,22 @@
   outline: none;
 }
 
+.input-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px;
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--glass-border);
+  border-radius: 4px;
+}
+
+.input-with-icon input {
+  border: none;
+  background: transparent;
+  padding: 10px 0;
+}
+
 .modal-footer {
   display: flex;
   justify-content: flex-end;

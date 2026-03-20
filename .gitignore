@@ -28,6 +28,8 @@ build/
 .next/
 .vercel
 *.log
+frontend/test-results/
+frontend/playwright-report/
 
 # Docker
 .docker/

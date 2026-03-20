@@ -11,29 +11,25 @@ const LoginPage = () => {
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  
+
   const navigate = useNavigate();
   const setToken = useAuthStore((state) => state.setToken);
   const setUser = useAuthStore((state) => state.setUser);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     setLoading(true);
     setError('');
 
     try {
       const endpoint = mode === 'login' ? '/auth/login' : '/auth/register';
-      const resp = await api.post(endpoint, { username, password });
-      
-      setToken(resp.data.access_token);
-      
-      // Fetch user profile immediately
-      const userResp = await api.get('/users/me');
-      setUser(userResp.data);
-      
+      const response = await api.post(endpoint, { username, password });
+      setToken(response.data.access_token);
+      setUser(response.data.user || null);
+
       navigate('/app');
-    } catch (err: any) {
-      setError(err.response?.data?.detail || err.message || 'Authentication failed');
+    } catch (error: any) {
+      setError(error.response?.data?.detail || error.message || 'Authentication failed');
     } finally {
       setLoading(false);
     }
@@ -42,19 +38,15 @@ const LoginPage = () => {
   return (
     <div className="login-container">
       <div className="stars-background"></div>
-      
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="login-card glass-panel"
-      >
+
+      <motion.div initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }} className="login-card glass-panel">
         <div className="brand">
           <h1 className="logo-text">KroGram</h1>
           <p className="subtitle">Connect. Chat. Create.</p>
         </div>
 
         <AnimatePresence mode="wait">
-          <motion.form 
+          <motion.form
             key={mode}
             initial={{ x: mode === 'login' ? -20 : 20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -63,38 +55,38 @@ const LoginPage = () => {
             className="login-form"
           >
             <label>Username</label>
-            <input 
-              type="text" 
-              placeholder="Enter username" 
+            <input
+              type="text"
+              placeholder="Enter username"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(event) => setUsername(event.target.value)}
               required
               className="input-glass"
             />
 
             <label>Password</label>
-            <input 
-              type="password" 
-              placeholder="••••••••" 
+            <input
+              type="password"
+              placeholder="Enter password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(event) => setPassword(event.target.value)}
               required
               className="input-glass"
             />
-            
+
             <button disabled={loading} type="submit" className="btn-primary">
-              {loading ? 'Processing...' : (mode === 'login' ? 'Login' : 'Create Account')}
+              {loading ? 'Processing...' : mode === 'login' ? 'Login' : 'Create Account'}
             </button>
 
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={() => {
                 setMode(mode === 'login' ? 'register' : 'login');
                 setError('');
-              }} 
+              }}
               className="btn-link"
             >
-              {mode === 'login' ? "Don't have an account? Register" : "Already have an account? Login"}
+              {mode === 'login' ? "Don't have an account? Register" : 'Already have an account? Login'}
             </button>
           </motion.form>
         </AnimatePresence>

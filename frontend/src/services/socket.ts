@@ -64,6 +64,7 @@ class SocketService {
 
         if (error) {
             console.error('[Supabase Realtime] Failed to send message', error);
+            throw error;
         }
     }
 

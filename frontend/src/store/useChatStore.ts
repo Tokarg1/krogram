@@ -1,11 +1,19 @@
 import { create } from 'zustand'
 
+export interface ChannelPeer {
+  id: number;
+  username: string;
+  avatar_url?: string | null;
+}
+
 export interface Channel {
   id: number;
   name: string;
   type: 'text' | 'voice';
   server_id?: number;
   is_dm?: boolean;
+  created_at?: string;
+  peer?: ChannelPeer | null;
 }
 
 export interface Server {
@@ -19,7 +27,7 @@ export interface Message {
   id: number;
   content?: string;
   media_url?: string;
-  media_type: 'text' | 'image' | 'video' | 'circle' | 'file';
+  media_type: 'text' | 'image' | 'video' | 'circle' | 'voice' | 'file';
   created_at: string;
   sender_id: number;
   channel_id: number;

@@ -30,6 +30,17 @@
   color: var(--text-muted);
 }
 
+.voice-room-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  color: var(--text-secondary);
+  max-width: 720px;
+  margin-top: 20px;
+}
+
 .voice-participants {
   flex: 1;
   display: flex;
@@ -51,6 +62,11 @@
   background: rgba(43, 45, 49, 0.4);
   border: 1px solid var(--glass-border);
   min-width: 120px;
+}
+
+.participant-card small {
+  color: var(--text-muted);
+  font-size: 0.78rem;
 }
 
 .avatar-large {
@@ -97,6 +113,11 @@
   justify-content: center;
 }
 
+.status-btn.active {
+  background: rgba(242, 63, 66, 0.16);
+  color: #ff8b8d;
+}
+
 .join-btn {
   display: flex;
   align-items: center;
@@ -113,4 +134,25 @@
 
 .join-btn:hover {
   filter: brightness(1.2);
+}
+
+@media (max-width: 768px) {
+  .voice-container {
+    padding: 20px 14px;
+  }
+
+  .voice-header {
+    padding: 24px;
+  }
+
+  .voice-room-note {
+    margin-top: 14px;
+  }
+
+  .voice-footer {
+    padding: 14px 18px;
+    border-radius: 28px;
+    flex-direction: column;
+    gap: 14px;
+  }
 }

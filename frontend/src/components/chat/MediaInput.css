@@ -9,7 +9,7 @@
   border-radius: 50%;
   color: var(--text-muted);
   background: transparent;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .media-btn:hover {
@@ -18,63 +18,146 @@
 }
 
 .circular-btn.recording {
-  background: #ff4444;
+  background: #f23f42;
   color: white;
-  animation: pulse 1.5s infinite;
+  animation: media-pulse 1.5s infinite;
 }
 
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
+@keyframes media-pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.recording-overlay,
+.voice-recording-overlay {
+  position: fixed;
+  bottom: 96px;
+  right: 24px;
+  z-index: 1000;
 }
 
 .recording-overlay {
-  position: fixed;
-  bottom: 100px;
-  right: 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  z-index: 1000;
 }
 
 .circle-preview {
-  width: 200px;
-  height: 200px;
+  width: 220px;
+  height: 220px;
   border-radius: 50%;
   object-fit: cover;
-  border: 4px solid #ff4444;
+  border: 4px solid #f23f42;
   background: black;
 }
 
 .recording-status {
-  background: rgba(0,0,0,0.8);
-  padding: 4px 12px;
-  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.78);
+  padding: 6px 12px;
+  border-radius: 999px;
   color: white;
   font-weight: 600;
 }
 
+.flip-camera-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(0, 0, 0, 0.52);
+  color: white;
+  border-radius: 50%;
+  padding: 10px;
+  display: flex;
+  z-index: 1000;
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.timer-dot {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  width: 12px;
+  height: 12px;
+  background: #f23f42;
+  border-radius: 50%;
+  animation: media-pulse 1s infinite;
+}
+
+.voice-recording-overlay {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(16, 18, 23, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.36);
+}
+
+.voice-recording-pulse {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(242, 63, 66, 0.18);
+  color: #ff7174;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: media-pulse 1.1s infinite;
+}
+
+.voice-recording-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.voice-recording-meta strong {
+  font-size: 0.95rem;
+  color: white;
+}
+
+.voice-recording-meta span {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
 .preview-modal {
   position: fixed;
-  bottom: 100px;
-  right: 40px;
+  bottom: 96px;
+  right: 24px;
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
   z-index: 1001;
-  border-radius: 50% 50% 12px 50%;
+  border-radius: 22px;
+  min-width: 290px;
+}
+
+.audio-preview-modal {
+  min-width: 340px;
 }
 
 .circle-preview-final {
-  width: 250px;
-  height: 250px;
+  width: 260px;
+  height: 260px;
   border-radius: 50%;
   object-fit: cover;
   background: black;
+}
+
+.voice-preview-player {
+  width: 100%;
 }
 
 .preview-actions {
@@ -91,8 +174,36 @@
   align-items: center;
   justify-content: center;
   color: white;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-.circle-red { background: #ff4444; }
-.circle-green { background: #23a55a; }
+.circle-red {
+  background: #f23f42;
+}
+
+.circle-green {
+  background: #23a55a;
+}
+
+@media (max-width: 768px) {
+  .recording-overlay,
+  .voice-recording-overlay,
+  .preview-modal {
+    right: 12px;
+    bottom: 118px;
+  }
+
+  .circle-preview {
+    width: 180px;
+    height: 180px;
+  }
+
+  .circle-preview-final {
+    width: 220px;
+    height: 220px;
+  }
+
+  .audio-preview-modal {
+    min-width: min(92vw, 340px);
+  }
+}
