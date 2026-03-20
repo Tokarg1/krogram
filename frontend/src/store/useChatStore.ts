@@ -45,6 +45,7 @@ interface ChatState {
   setCurrentChannel: (channel: Channel | null) => void;
   setMessages: (messages: Message[]) => void;
   addMessage: (message: Message) => void;
+  removeMessage: (id: number) => void;
   addServer: (server: Server) => void;
   setVoiceUpdate: (channel_id: number, user_id: number, status: 'joined' | 'left') => void;
   setIsConnected: (connected: boolean) => void;
