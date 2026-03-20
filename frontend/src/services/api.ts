@@ -31,10 +31,10 @@ export const api = {
                 return response((data || []).map((d: any) => d.channels).filter((c: any) => c.is_dm));
             }
             if (url === '/friends/incoming') {
-                const phone = useAuthStore.getState().user?.phone;
+                const username = useAuthStore.getState().user?.username;
                 const { data } = await supabase.from('friend_requests')
                     .select('id, status, from_user_id, users!friend_requests_from_user_id_fkey(*)')
-                    .eq('to_phone', phone)
+                    .eq('to_phone', username)
                     .eq('status', 'pending');
                 return response((data || []).map((r: any) => ({ id: r.id, from_user: r.users })));
             }
@@ -100,10 +100,10 @@ export const api = {
             if (url.startsWith('/friends/request/')) {
                 const targetUserId = parseInt(url.split('/').pop() || '0');
                 const uid = getCurrentUserId();
-                // Get target phone
-                const { data: target } = await supabase.from('users').select('phone').eq('id', targetUserId).single();
+                const { data: target } = await supabase.from('users').select('username').eq('id', targetUserId).single();
                 if (target) {
-                    await supabase.from('friend_requests').insert([{ from_user_id: uid, to_phone: target.phone }]);
+                    // Adapt legacy to_phone column to store the target username
+                    await supabase.from('friend_requests').insert([{ from_user_id: uid, to_phone: target.username }]);
                 }
                 return response({message: "Sent"});
             }
