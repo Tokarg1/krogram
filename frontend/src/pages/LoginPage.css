@@ -1,0 +1,87 @@
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, #1b2735 0%, #090a0f 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.stars-background {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  background: transparent url('http://www.script-tutorials.com/demos/360/images/stars.png') repeat top center;
+  z-index: 0;
+  opacity: 0.3;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 40px;
+  border-radius: 24px;
+  text-align: center;
+  z-index: 10;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8),
+              0 0 100px rgba(88, 101, 242, 0.1);
+}
+
+.brand {
+  margin-bottom: 30px;
+}
+
+.logo-text {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(to right, #ffffff, #5865f2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.login-form label {
+  text-align: left;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.btn-primary {
+  margin-top: 10px;
+  padding: 14px;
+  font-size: 1rem;
+}
+
+.btn-link {
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-top: 5px;
+  text-decoration: underline;
+}
+
+.error-text {
+  color: #ff4d4d;
+  font-size: 0.85rem;
+  margin-top: 15px;
+}
+
+.hint {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}

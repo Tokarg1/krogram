@@ -1,0 +1,41 @@
+# Local DB data
+bd/
+db_data/
+*.db
+*.sqlite
+
+# Deployment scripts (containing tokens)
+deploy.bat
+deploy_tmp.bat
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+env/
+venv/
+.venv/
+.env
+
+# Media/Uploads
+backend/media/
+backend/uploads/
+
+# Node/React
+node_modules/
+dist/
+build/
+.next/
+.vercel
+*.log
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# IDE
+.vscode/
+.idea/
+.gemini/
+.agent/
+.agents/

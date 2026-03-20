@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: krogram-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-krogram}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-krogram}
+      POSTGRES_DB: ${POSTGRES_DB:-krogram}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: krogram-backend
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-krogram}:${POSTGRES_PASSWORD:-krogram}@db:5432/${POSTGRES_DB:-krogram}
+      SECRET_KEY: ${SECRET_KEY:-SUPER_SECRET_KEY_DONT_TELL_ANYONE_12345}
+    depends_on:
+      - db
+    volumes:
+      - ./backend/media:/app/media
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: krogram-frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  db_data:

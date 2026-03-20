@@ -1,0 +1,116 @@
+.voice-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 40px;
+  background: radial-gradient(circle at center, #1b2735 0%, #090a0f 100%);
+}
+
+.voice-header {
+  padding: 40px;
+  border-radius: 32px;
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+}
+
+.voice-icon {
+  color: var(--accent-primary);
+  margin-bottom: 20px;
+}
+
+.voice-header h2 {
+  font-size: 1.8rem;
+  margin-bottom: 8px;
+}
+
+.voice-header p {
+  color: var(--text-muted);
+}
+
+.voice-participants {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+  align-content: flex-start;
+  max-width: 800px;
+  padding: 40px 0;
+}
+
+.participant-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  border-radius: 20px;
+  background: rgba(43, 45, 49, 0.4);
+  border: 1px solid var(--glass-border);
+  min-width: 120px;
+}
+
+.avatar-large {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 800;
+  box-shadow: 0 0 20px rgba(88, 101, 242, 0.3);
+}
+
+.empty-msg {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+.voice-footer {
+  width: 100%;
+  max-width: 600px;
+  padding: 16px 24px;
+  border-radius: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.device-status {
+  display: flex;
+  gap: 12px;
+}
+
+.status-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.join-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  border-radius: 32px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: white;
+}
+
+.btn-green { background: #23a55a; }
+.btn-red { background: #da373c; }
+
+.join-btn:hover {
+  filter: brightness(1.2);
+}

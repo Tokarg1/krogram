@@ -1,0 +1,82 @@
+.sticker-panel {
+  position: absolute;
+  bottom: 110px;
+  left: 20px;
+  width: 280px;
+  background: rgba(30, 31, 34, 0.95);
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  z-index: 1000;
+  padding: 12px;
+  backdrop-filter: blur(20px);
+}
+
+.sticker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.sticker-grid::-webkit-scrollbar { width: 4px; }
+.sticker-grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+.sticker-option {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.sticker-option:hover {
+  transform: scale(1.15);
+}
+
+.sticker-img {
+  max-width: 160px;
+  max-height: 160px;
+  margin-top: 8px;
+  object-fit: contain;
+  user-select: none;
+}
+
+.sticker-toggle-btn {
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.sticker-toggle-btn:hover {
+  color: #5865f2;
+}
+
+.delete-msg-icon {
+  opacity: 0;
+  color: var(--text-muted);
+  cursor: pointer;
+  margin-left: 8px;
+  transition: all 0.2s;
+}
+
+.message-item:hover .delete-msg-icon {
+  opacity: 1;
+}
+
+.delete-msg-icon:hover {
+  color: #f23f42;
+  transform: scale(1.2);
+}
+
+@media (max-width: 768px) {
+  .sticker-panel {
+    width: calc(100% - 40px);
+    left: 20px;
+    bottom: 120px;
+  }
+}
