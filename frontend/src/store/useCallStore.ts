@@ -10,15 +10,17 @@ interface CallState {
   remoteStream: MediaStream | null;
   peerConnection: RTCPeerConnection | null;
   isMuted: boolean;
+  startedAt: number | null;
   
   startCall: (userId: number, username: string) => void;
-  receiveCall: (userId: number, username: string, signalData: any) => void;
+  receiveCall: (userId: number, username: string) => void;
   acceptCall: () => void;
   endCall: () => void;
   toggleMute: () => void;
   setLocalStream: (stream: MediaStream | null) => void;
   setRemoteStream: (stream: MediaStream | null) => void;
   setPeerConnection: (pc: RTCPeerConnection | null) => void;
+  isInCall: () => boolean;
 }
 
 export const useCallStore = create<CallState>((set) => ({
@@ -31,22 +33,31 @@ export const useCallStore = create<CallState>((set) => ({
   remoteStream: null,
   peerConnection: null,
   isMuted: false,
+  startedAt: null,
 
   startCall: (userId, username) => set({
     isCalling: true,
+    isReceiving: false,
+    isActive: false,
     remoteUserId: userId,
     remoteUsername: username,
+    startedAt: null,
   }),
   
   receiveCall: (userId, username) => set({
+    isActive: false,
+    isCalling: false,
     isReceiving: true,
     remoteUserId: userId,
     remoteUsername: username,
+    startedAt: null,
   }),
 
   acceptCall: () => set({
+    isCalling: false,
     isReceiving: false,
     isActive: true,
+    startedAt: Date.now(),
   }),
 
   endCall: () => set({
@@ -59,6 +70,7 @@ export const useCallStore = create<CallState>((set) => ({
     remoteStream: null,
     peerConnection: null,
     isMuted: false,
+    startedAt: null,
   }),
   
   toggleMute: () => set((state) => {
@@ -73,4 +85,8 @@ export const useCallStore = create<CallState>((set) => ({
   setLocalStream: (stream) => set({ localStream: stream }),
   setRemoteStream: (stream) => set({ remoteStream: stream }),
   setPeerConnection: (pc) => set({ peerConnection: pc }),
+  isInCall: () => {
+    const state = useCallStore.getState();
+    return state.isActive || state.isCalling || state.isReceiving;
+  },
 }));

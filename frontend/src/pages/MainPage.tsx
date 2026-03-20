@@ -30,7 +30,10 @@ const MainPage = () => {
     socketService.connect();
     callService.initializeSignaling();
 
-    return () => socketService.disconnect();
+    return () => {
+      socketService.disconnect();
+      callService.destroy();
+    };
   }, [setServers, setCurrentServer]);
 
   return (

@@ -6,17 +6,48 @@ import { callService } from '../../services/callService';
 import './ActiveCall.css';
 
 const ActiveCall = () => {
-  const { isActive, isReceiving, isCalling, remoteUsername, remoteUserId, remoteStream, isMuted, toggleMute } = useCallStore();
+  const { isActive, isReceiving, isCalling, remoteUsername, remoteUserId, remoteStream, isMuted, startedAt, toggleMute } = useCallStore();
   const audioRef = useRef<HTMLAudioElement>(null);
+  const [elapsedSeconds, setElapsedSeconds] = React.useState(0);
 
   // Play incoming remote audio automatically
   useEffect(() => {
-    if (remoteStream && audioRef.current) {
+    if (!audioRef.current) return;
+
+    if (remoteStream) {
         audioRef.current.srcObject = remoteStream;
+        void audioRef.current.play().catch(() => {
+          // Browser autoplay policies can still block playback until the user interacts.
+        });
+    } else {
+        audioRef.current.srcObject = null;
     }
   }, [remoteStream]);
 
+  useEffect(() => {
+    if (!isActive || !startedAt) {
+      setElapsedSeconds(0);
+      return;
+    }
+
+    const updateElapsed = () => {
+      setElapsedSeconds(Math.max(0, Math.floor((Date.now() - startedAt) / 1000)));
+    };
+
+    updateElapsed();
+    const intervalId = window.setInterval(updateElapsed, 1000);
+
+    return () => window.clearInterval(intervalId);
+  }, [isActive, startedAt]);
+
   if (!isActive && !isReceiving && !isCalling) return null;
+
+  const minutes = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
+  const seconds = String(elapsedSeconds % 60).padStart(2, '0');
+
+  let statusText = 'Calling...';
+  if (isReceiving) statusText = 'Incoming call...';
+  if (isActive) statusText = `Call connected - ${minutes}:${seconds}`;
 
   return (
     <AnimatePresence>
@@ -32,21 +63,17 @@ const ActiveCall = () => {
             </div>
             <div className="call-text">
                 <h3>{remoteUsername}</h3>
-                <p>
-                    {isCalling && 'Calling...'}
-                    {isReceiving && 'Incoming Call...'}
-                    {isActive && 'Call Connected - 00:00'}
-                </p>
+                <p>{statusText}</p>
             </div>
         </div>
         
         <div className="call-actions">
             {isReceiving && !isActive && (
                 <>
-                    <button className="btn-call accept" onClick={() => remoteUserId && callService.answerCall(remoteUserId)}>
+                    <button className="btn-call accept" onClick={() => remoteUserId && void callService.answerCall(remoteUserId)}>
                         <Phone size={20} />
                     </button>
-                    <button className="btn-call reject" onClick={() => remoteUserId && callService.rejectCall(remoteUserId)}>
+                    <button className="btn-call reject" onClick={() => remoteUserId && void callService.rejectCall(remoteUserId)}>
                         <PhoneOff size={20} />
                     </button>
                 </>
@@ -57,7 +84,7 @@ const ActiveCall = () => {
                     <button className={`btn-call mute ${isMuted ? 'muted' : ''}`} onClick={toggleMute}>
                         {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
                     </button>
-                    <button className="btn-call end" onClick={() => callService.endActiveCall()}>
+                    <button className="btn-call end" onClick={() => void callService.endActiveCall()}>
                         <PhoneOff size={20} />
                     </button>
                 </>
@@ -65,7 +92,7 @@ const ActiveCall = () => {
         </div>
         
         {/* Invisible audio element to play the WebRTC remote peer's voice */}
-        <audio ref={audioRef} autoPlay />
+        <audio ref={audioRef} autoPlay playsInline />
       </motion.div>
     </AnimatePresence>
   );
